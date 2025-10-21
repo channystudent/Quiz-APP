@@ -1,0 +1,111 @@
+/* Importing Google Fonts - Montserrat */
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+}
+
+body {
+    display: flex;
+    padding: 15px;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: url('sea.jpg') no-repeat center center;
+    background-size: cover;
+    color: #fff;
+}
+
+.config-container {
+    width: 415px;
+    padding: 25px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, .2);
+    backdrop-filter: blur(20px);
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.13);
+}
+
+.config-container .config-title {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.31rem;
+}
+
+.config-container .config-option {
+    margin-top: 25px;
+}
+
+.config-option .option-title {
+    display: flex;
+    justify-content: center;
+    font-size: 1.125rem;
+    font-weight: 500;
+    margin-bottom: 20px;
+}
+
+.config-option .category-options {
+    display: grid;
+    gap: 15px;
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.config-option .question-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 0 30px;
+    justify-content: center;
+}
+
+.config-option button {
+    padding: 12px;
+    font-size: 0.938rem;
+    font-weight: 500;
+    background: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid #9B8FFF;
+    transition: 0.3s ease;
+}
+
+.config-option button.active {
+    color: #5145BA;
+    border-color: #5145BA;
+    background: #dfdafd;
+}
+
+.config-option button:hover {
+    background: #dad5fd;
+}
+
+.question-options button {
+    flex: 1 1 10%;
+}
+
+.config-container .start-quiz-btn {
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    margin-top: 30px;
+    font-weight: 500;
+    background: #5145BA;
+    padding: 13px 25px;
+    font-size: 1rem;
+    border-radius: 6px;
+    transition: background 0.3s ease;
+}
+
+.config-container .start-quiz-btn:hover {
+    background: #403795;
+}
+.start-quiz-btn{
+    display: flex;
+    justify-self: center;
+    align-items: center;
+}
