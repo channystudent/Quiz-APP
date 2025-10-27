@@ -99,6 +99,44 @@ const quizQuestions = [
         correct: 0,
         category: "Technology"
     }
+    ,
+    // Extra questions
+    {
+        question: "Which river runs through the city of London?",
+        options: ["Seine", "Danube", "Thames", "Rhine"],
+        correct: 2,
+        category: "Geography"
+    },
+    {
+        question: "What gas do plants primarily absorb from the atmosphere?",
+        options: ["Oxygen", "Carbon dioxide", "Nitrogen", "Helium"],
+        correct: 1,
+        category: "Science"
+    },
+    {
+        question: "What is 12 × 12?",
+        options: ["124", "144", "132", "156"],
+        correct: 1,
+        category: "Mathematics"
+    },
+    {
+        question: "Which year did the Berlin Wall fall?",
+        options: ["1987", "1989", "1991", "1993"],
+        correct: 1,
+        category: "History"
+    },
+    {
+        question: "Which company developed the Android operating system?",
+        options: ["Microsoft", "Google", "Apple", "IBM"],
+        correct: 1,
+        category: "Technology"
+    },
+    {
+        question: "Which language is primarily used for styling web pages?",
+        options: ["HTML", "Python", "CSS", "Java"],
+        correct: 2,
+        category: "General"
+    }
 ];
 
 let currentUser = null;
@@ -106,51 +144,18 @@ let currentUser = null;
 // Handle registration
 const registerForm = document.getElementById('registerForm');
 if (registerForm) {
-    registerForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = {
-            username: document.getElementById('username').value,
-            email: document.getElementById('email').value,
-            password: document.getElementById('password').value
-        };
-
-        try {
-            const response = await fetch('/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formData)
-            });
-            const data = await response.json();
-            
-            const messageDiv = document.getElementById('message');
-            if (response.ok) {
-                messageDiv.className = 'success';
-                messageDiv.textContent = 'Registration successful! Please go to login page.';
-                registerForm.reset();
-            } else {
-                messageDiv.className = 'error';
-                messageDiv.textContent = data.error;
-            }
-        } catch (error) {
-            console.error('Error:', error);
-        }
+    registerForm.addEventListener('submit', function(e) {
+        // Let the form submit normally to the server
+        return true;
     });
 }
 
 // Handle login
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        // In a real app, you would verify credentials with the server
-        currentUser = {
-            id: 1, // This should come from the server
-            username: document.getElementById('login-username').value
-        };
-        document.getElementById('login-section').classList.add('hidden');
-        initializeQuiz();
+    loginForm.addEventListener('submit', function(e) {
+        // Let the form submit normally to the server
+        return true;
     });
 }
 

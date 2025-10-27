@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import json
@@ -7,6 +7,7 @@ from io import BytesIO
 from dicttoxml import dicttoxml
 
 app = Flask(__name__)
+app.secret_key = 'replace-this-with-a-secure-random-key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///quiz.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
@@ -32,23 +33,62 @@ with app.app_context():
 def index():
     return render_template('index.html')
 
+
+@app.route('/login', methods=['POST'])
+def login():
+    username = request.form.get('username')
+    password = request.form.get('password')
+    
+    if not username or not password:
+        flash('Please enter both username and password')
+        return redirect(url_for('index'))
+    
+    user = User.query.filter_by(username=username).first()
+    
+    if not user:
+        flash('Username not found')
+        return redirect(url_for('index'))
+        
+    if user.password != password:
+        flash('Incorrect password')
+        return redirect(url_for('index'))
+    
+    # Login successful
+    session['user_id'] = user.id
+    session['username'] = user.username
+    return redirect(url_for('quiz'))
+
+
+@app.route('/quiz')
+def quiz():
+    # require login
+    if 'user_id' not in session:
+        return redirect(url_for('index'))
+    return render_template('quiz.html')
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        data = request.json
-        if User.query.filter_by(username=data['username']).first():
-            return jsonify({'error': 'Username already exists'}), 400
-        if User.query.filter_by(email=data['email']).first():
-            return jsonify({'error': 'Email already exists'}), 400
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        
+        if User.query.filter_by(username=username).first():
+            flash('Username already exists')
+            return redirect(url_for('register'))
+        if User.query.filter_by(email=email).first():
+            flash('Email already exists')
+            return redirect(url_for('register'))
         
         user = User(
-            username=data['username'],
-            email=data['email'],
-            password=data['password']  # In a real app, hash this password!
+            username=username,
+            email=email,
+            password=password  # In a real app, hash this password!
         )
         db.session.add(user)
         db.session.commit()
-        return jsonify({'message': 'Registration successful'})
+        flash('Registration successful! Please login.')
+        return redirect(url_for('index'))
     return render_template('register.html')
 
 @app.route('/submit_quiz', methods=['POST'])

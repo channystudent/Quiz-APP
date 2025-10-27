@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+  <div class="card quiz-card">
+    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+      <div class="header-left">
+        <h1 style="margin:0;">QuickQuiz</h1>
+        <p class="lead muted" style="margin:0.25rem 0 0 0;">Welcome, {{ session.get('username') or 'Guest' }}</p>
+      </div>
+      <div class="header-right" style="display:flex;align-items:center;gap:0.75rem;">
+        <div class="timer-badge" id="timer">--:--</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="progress-wrap" style="margin-bottom:1rem;display:flex;align-items:center;gap:0.75rem;">
+        <div class="progress-track" style="flex:1;height:10px;border-radius:999px;background:rgba(15,23,42,0.06);overflow:hidden;">
+          <div class="progress-fill" id="progressFill" style="width:0%;height:100%;background:linear-gradient(90deg,var(--primary),var(--accent));border-radius:999px;"></div>
+        </div>
+        <div class="progress-text muted" style="font-weight:600;font-size:0.95rem;"> <span id="currentIndex">0</span>/<span id="totalCount">0</span></div>
+      </div>
+
+      <div id="questionArea">
+        <!-- question will render here -->
+      </div>
+
+      <div class="quiz-footer" style="margin-top:1.25rem;">
+        <button class="btn-secondary" id="prevBtn" disabled>Previous</button>
+        <div style="flex:1"></div>
+        <button class="btn-primary" id="nextBtn">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const userId = JSON.parse('{{ session.get("user_id", "null")|tojson|safe }}');
+const questions = [
+  {id:1, category:'Geography', q:'What is the capital of France?', options:['London','Berlin','Paris','Madrid'], a:2},
+  {id:2, category:'Science', q:'Which planet is known as the Red Planet?', options:['Earth','Mars','Jupiter','Venus'], a:1},
+  {id:3, category:'Math', q:'What is 7 + 6?', options:['12','13','14','11'], a:1}
+];
+
+let state = {
+  index: 0,
+  answers: Array(questions.length).fill(null),
+  startTime: Date.now()
+};
+
+function render() {
+  const area = document.getElementById('questionArea');
+  const q = questions[state.index];
+  document.getElementById('currentIndex').textContent = state.index + 1;
+  document.getElementById('totalCount').textContent = questions.length;
+  document.getElementById('progressFill').style.width = ((state.index) / (questions.length - 1)) * 100 + '%';
+
+  area.innerHTML = `
+    <div class="question-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+        <span class="category-chip">${q.category}</span>
+        <div class="muted">Question ${state.index+1} / ${questions.length}</div>
+      </div>
+      <h3 class="question-text">${q.q}</h3>
+      <div class="options" id="options">
+        ${q.options.map((opt,i)=>`<div class="option-btn" data-index="${i}">${opt}</div>`).join('')}
+      </div>
+    </div>
+  `;
+
+  // mark previously selected
+  const opts = area.querySelectorAll('.option-btn');
+  opts.forEach(el=>{
+    el.addEventListener('click', ()=>{
+      opts.forEach(o=>o.classList.remove('selected'));
+      el.classList.add('selected');
+      state.answers[state.index] = parseInt(el.getAttribute('data-index'));
+    });
+  });
+
+  document.getElementById('prevBtn').disabled = state.index === 0;
+  document.getElementById('nextBtn').textContent = state.index === questions.length -1 ? 'Submit' : 'Next';
+}
+
+function next() {
+  if(state.index < questions.length -1) {
+    state.index++;
+    render();
+  } else {
+    submitQuiz();
+  }
+}
+function prev() {
+  if(state.index > 0) {
+    state.index--;
+    render();
+  }
+}
+
+function submitQuiz(){
+  // compute score
+  let score = 0;
+  const answers = state.answers.map((ans,i)=>({question_id:questions[i].id, selected: ans}));
+  answers.forEach((a,i)=>{ if(a.selected === questions[i].a) score++; });
+
+  // show a simple result UI
+  const area = document.getElementById('questionArea');
+  // Build a detailed results view with correct/incorrect markings
+  area.innerHTML = `
+    <div class="result-container">
+      <div class="result-header">
+        <div class="result-title">Quiz Complete</div>
+        <div class="result-score">${score} / ${questions.length}</div>
+      </div>
+      <p class="muted">You answered <strong>${score}</strong> of <strong>${questions.length}</strong> questions correctly.</p>
+      <div class="result-list">
+        ${questions.map((q,qi)=>{
+          const userSel = state.answers[qi];
+          return `
+            <div class="result-item">
+              <div class="result-question">${qi+1}. ${q.q}</div>
+              <div class="result-options">
+                ${q.options.map((opt,oi)=>{
+                  const isCorrect = oi === q.a;
+                  const isSelected = userSel === oi;
+                  const cls = isCorrect ? 'correct' : (isSelected ? 'wrong' : '');
+                  return `<div class="option-btn ${cls}">${isSelected ? '<strong>Your answer:</strong> ' : ''}${opt}${isCorrect ? ' <span class="badge">Correct</span>' : ''}</div>`;
+                }).join('')}
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+      <div style="margin-top:1rem;display:flex;gap:0.5rem;justify-content:center">
+        <button class="btn-primary" id="saveBtn">Save Result</button>
+        <button class="btn-secondary" id="retryBtn">Retry</button>
+      </div>
+    </div>
+  `;
+
+  // disable navigation buttons after finish
+  document.getElementById('nextBtn').disabled = true;
+  document.getElementById('prevBtn').disabled = true;
+
+  document.getElementById('saveBtn').addEventListener('click', async ()=>{
+    try{
+      const res = await fetch('/submit_quiz',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id: userId, score, answers})});
+      const data = await res.json();
+      alert(data.message || 'Saved');
+      window.location.href = '/';
+    }catch(e){ alert('Error saving result'); }
+  });
+  document.getElementById('retryBtn').addEventListener('click', ()=>{ state.index=0; state.answers = Array(questions.length).fill(null); document.getElementById('nextBtn').disabled = false; document.getElementById('prevBtn').disabled = false; render(); });
+}
+
+document.getElementById('nextBtn').addEventListener('click', next);
+document.getElementById('prevBtn').addEventListener('click', prev);
+
+// simple timer
+let seconds = 0;
+setInterval(()=>{
+  seconds++;
+  const m = String(Math.floor(seconds/60)).padStart(2,'0');
+  const s = String(seconds%60).padStart(2,'0');
+  document.getElementById('timer').textContent = `${m}:${s}`;
+},1000);
+
+// initial render
+render();
+</script>
+
+{% endblock %}
