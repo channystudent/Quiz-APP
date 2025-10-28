@@ -1,0 +1,10 @@
+{
+  // Use the same Python interpreter that works in your terminal
+  "python.defaultInterpreterPath": "C:\\Users\\CHANNY.VEN\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+
+  // Ensure the language server indexes installed packages
+  "python.analysis.indexing": true,
+  "python.analysis.packageIndexDepths": {
+    "*": 2
+  }
+}
