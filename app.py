@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import json
 import pandas as pd
+import sqlite3
 from io import BytesIO
 from dicttoxml import dicttoxml
 
@@ -28,6 +29,67 @@ class QuizResult(db.Model):
 
 with app.app_context():
     db.create_all()
+
+
+
+
+
+
+
+@app.route('/admin-login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        
+        conn = sqlite3.connect('quiz.db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM admin WHERE username=? AND password=?", (username, password))
+        admin = cursor.fetchone()
+        conn.close()
+        
+        if admin:
+            session['admin'] = username
+            return redirect('/admin-dashboard')
+        else:
+            return "Invalid credentials"
+    
+    # For GET request, show the login form
+    return render_template('admin_login.html')
+
+
+@app.route('/admin-dashboard', methods=['GET', 'POST'])
+def admin_dashboard():
+    if 'admin' not in session:
+        return redirect('/admin-login')
+
+    if request.method == 'POST':
+        category = request.form['category']
+        question = request.form['question']
+        option1 = request.form['option1']
+        option2 = request.form['option2']
+        option3 = request.form['option3']
+        option4 = request.form['option4']
+        answer = request.form['answer']
+
+        conn = sqlite3.connect('quiz.db')
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO question (category, question, option1, option2, option3, option4, answer)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (category, question, option1, option2, option3, option4, answer))
+        conn.commit()
+        conn.close()
+
+        return "Question added successfully!"
+    
+    return render_template('admin_dashboard.html')
+
+
+
+
+
+
 
 @app.route('/')
 def index():
