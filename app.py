@@ -31,11 +31,6 @@ with app.app_context():
     db.create_all()
 
 
-
-
-
-
-
 @app.route('/admin-login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
@@ -84,12 +79,6 @@ def admin_dashboard():
         return "Question added successfully!"
     
     return render_template('admin_dashboard.html')
-
-
-
-
-
-
 
 @app.route('/')
 def index():
