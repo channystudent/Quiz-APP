@@ -7,7 +7,7 @@
   --bg: #ffffff;
   --muted: #6b7280;
   --surface: #f6f7fb;
-  --success: #10b981;
+  --success: #10b9819c;
   --danger: #ef4444;
   --radius: 12px;
   --gap: 1rem;
@@ -50,7 +50,7 @@ body {
   box-shadow: var(--shadow-1);
   overflow: hidden;
   /* match screenshot: centered narrow card */
-  max-width: 760px;
+  max-width:760px;
   margin: 1.5rem auto;
 }
 
@@ -572,4 +572,69 @@ nav {
 
 .nav-links a:hover {
   color: white;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+.app-container {
+  max-width: 600px;
+  margin: 60px auto;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+h1, h2 { text-align: center; }
+
+.card {
+  background: rgba(255,255,255,0.15);
+  border-radius: 8px;
+  padding: 15px;
+  margin: 15px 0;
+}
+
+input, select {
+  width: 97%;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  margin: 5px 0;
+}
+
+button {
+  background: #00c6ff;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.3s;
+}
+
+button:hover {
+  background: #0072ff;
+}
+
+.stage { display: none; }
+.stage.active { display: block; }
+
+.hidden { display: none; }
+
+.next-btn, .back-btn {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  background: #4CAF50;
 }

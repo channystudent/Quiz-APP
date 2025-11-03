@@ -326,3 +326,31 @@ function showResults(score, answers) {
     
     reviewDiv.innerHTML = reviewHtml;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

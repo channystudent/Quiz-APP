@@ -1,11 +1,188 @@
-<h2>Create New Question</h2>
-<form method="POST">
-  <input type="text" name="category" placeholder="Category" required><br>
-  <textarea name="question" placeholder="Question" required></textarea><br>
-  <input type="text" name="option1" placeholder="Option 1" required><br>
-  <input type="text" name="option2" placeholder="Option 2" required><br>
-  <input type="text" name="option3" placeholder="Option 3" required><br>
-  <input type="text" name="option4" placeholder="Option 4" required><br>
-  <input type="text" name="answer" placeholder="Correct Answer" required><br>
-  <button type="submit">Add Question</button>
-</form>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding-top: 50px;
+        }
+
+        .dashboard-box {
+            background-color: white;
+            width: 90%;
+            max-width: 800px;
+            padding: 30px 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        form {
+            margin-top: 10px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+        }
+
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-family: inherit;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .logout {
+            display: inline-block;
+            text-decoration: none;
+            background-color: #e74c3c;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 4px;
+            /* float: right; */
+            margin-top: -10px;
+        }
+
+        .logout:hover {
+            background-color: #c0392b;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 25px;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        table th {
+            background-color: #3498db;
+            color: white;
+        }
+
+        table td a {
+            color: #e74c3c;
+            text-decoration: none;
+        }
+
+        table td a:hover {
+            text-decoration: underline;
+        }
+
+        .no-questions {
+            text-align: center;
+            color: #888;
+            padding: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="dashboard-box">
+            <a href="/logout" class="logout">Logout</a>
+            <h2>Admin Dashboard</h2>
+
+            <form method="POST">
+                <label>Question Category:</label>
+                <select name="category" required>
+                    <option value="">-- Choose Category --</option>
+                    <option value="General">General</option>
+                    <option value="Math">Math</option>
+                    <option value="Science">Science</option>
+                    <option value="History">History</option>
+                </select>
+
+                <label>Question:</label>
+                <textarea name="question" rows="3" placeholder="Write your question here..." required></textarea>
+
+                <label>Option 1:</label>
+                <input type="text" name="option1">
+
+                <label>Option 2:</label>
+                <input type="text" name="option2">
+
+                <label>Option 3:</label>
+                <input type="text" name="option3">
+
+                <label>Option 4:</label>
+                <input type="text" name="option4">
+
+                <label>Correct Answer:</label>
+                <input type="text" name="answer" placeholder="Type the correct answer" required>
+
+                <button type="submit">Save Question</button>
+            </form>
+
+            <hr style="margin-top:30px; margin-bottom:20px;">
+
+            <h3>All Questions</h3>
+            {% if questions %}
+            <table>
+                <tr>
+                    <th>ID</th>
+                    <th>Category</th>
+                    <th>Question</th>
+                    <th>Correct Answer</th>
+                    <th>Action</th>
+                </tr>
+                {% for q in questions %}
+                <tr>
+                    <td>{{ q[0] }}</td>
+                    <td>{{ q[1] }}</td>
+                    <td>{{ q[2] }}</td>
+                    <td>{{ q[7] }}</td>
+                    <td>
+                        <a href="/delete-question/{{ q[0] }}">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+            {% else %}
+            <div class="no-questions">No questions added yet.</div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

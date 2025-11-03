@@ -23,14 +23,57 @@
   </nav>
 
   <!-- Login Card -->
-  <div class="admin-login-card">
+  <!-- <div class="admin-login-card">
     <h2>Admin Login</h2>
     <form method="POST">
       <input type="text" name="username" placeholder="Username" required>
       <input type="password" name="password" placeholder="Password" required>
       <button type="submit">Login</button>
     </form>
+  </div> -->
+
+
+
+
+
+
+  <div class="app-container">
+    <h1>🎓 Quiz System</h1>
+
+    <div id="adminStage" class="stage active">
+      <h2>Admin Panel</h2>
+      <div class="card">
+        <input type="text" id="categoryInput" placeholder="Add new category" />
+        <button onclick="addCategory()">Add</button>
+      </div>
+
+      <div class="card">
+        <select id="categorySelect"></select>
+        <input type="text" id="questionInput" placeholder="Question" />
+        <input type="text" id="correctInput" placeholder="Correct answer" />
+        <input type="text" id="opt1" placeholder="Option 1" />
+        <input type="text" id="opt2" placeholder="Option 2" />
+        <input type="text" id="opt3" placeholder="Option 3" />
+        <button onclick="addQuestion()">Add Question</button>
+      </div>
+
+      <div id="questionList" class="card"></div>
+      <button class="next-btn" onclick="showStage('userStage')">➡ Go to User View</button>
+    </div>
+
+    <div id="userStage" class="stage">
+      <h2>Select Category</h2>
+      <div class="card">
+        <select id="userCategory"></select>
+        <button onclick="startQuiz()">Start Quiz</button>
+      </div>
+      <div id="quizContainer" class="card hidden"></div>
+      <div id="resultContainer" class="card hidden"></div>
+      <button class="back-btn" onclick="showStage('adminStage')">⬅ Back</button>
+    </div>
   </div>
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  <!-- <script src="{{ url_for('static', filename='js/main.js') }}"></script> -->
 
 </body>
 
