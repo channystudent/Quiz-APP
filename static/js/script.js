@@ -4,42 +4,67 @@ let index = 0;
 let score = 0;
 
 async function getCategories() {
-  const res = await fetch('/api/categories');
-  const data = await res.json();
-  const select = document.getElementById('categorySelect');
-  const userSelect = document.getElementById('userCategory');
-  select.innerHTML = '';
-  userSelect.innerHTML = '';
-  data.forEach(c => {
-    select.innerHTML += `<option value="${c.id}">${c.name}</option>`;
-    userSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
-  });
-  loadQuestions();
+  try {
+    const res = await fetch('/api/categories');
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    const data = await res.json();
+    const select = document.getElementById('categorySelect');
+    const userSelect = document.getElementById('userCategory');
+    select.innerHTML = '';
+    userSelect.innerHTML = '';
+    data.forEach(c => {
+      select.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+      userSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+    });
+    loadQuestions();
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    alert('Failed to load categories. Please refresh the page.');
+  }
 }
 
 async function addCategory() {
   const name = document.getElementById('categoryInput').value;
   if (!name) return alert('Enter category name');
-  await fetch('/api/categories', {
-    method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({name})
-  });
-  document.getElementById('categoryInput').value = '';
-  getCategories();
+  try {
+    const res = await fetch('/api/categories', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({name})
+    });
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    document.getElementById('categoryInput').value = '';
+    getCategories();
+  } catch (error) {
+    console.error('Error adding category:', error);
+    alert('Failed to add category. Please try again.');
+  }
 }
 
 async function loadQuestions() {
   const catId = document.getElementById('categorySelect').value;
   if (!catId) return;
-  const res = await fetch(`/api/questions/${catId}`);
-  const data = await res.json();
-  const list = document.getElementById('questionList');
-  list.innerHTML = data.map(q => `
-    <div class="question-item">
-      <b>${q.question}</b> (${q.correct})
-      <button onclick="deleteQuestion(${catId}, ${q.id})">🗑</button>
-    </div>
-  `).join('');
+  try {
+    const res = await fetch(`/api/questions/${catId}`);
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    const data = await res.json();
+    const list = document.getElementById('questionList');
+    list.innerHTML = data.map(q => `
+      <div class="question-item">
+        <b>${q.question}</b> (${q.correct})
+        <button onclick="deleteQuestion(${catId}, ${q.id})">🗑</button>
+      </div>
+    `).join('');
+  } catch (error) {
+    console.error('Error loading questions:', error);
+    const list = document.getElementById('questionList');
+    list.innerHTML = '<p style="color: red;">Failed to load questions. Please try again.</p>';
+  }
 }
 
 async function addQuestion() {
@@ -53,17 +78,33 @@ async function addQuestion() {
     correct
   ];
   if (!q || !correct) return alert('Fill all fields');
-  await fetch(`/api/questions/${catId}`, {
-    method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({question: q, correct, options})
-  });
-  ['questionInput','correctInput','opt1','opt2','opt3'].forEach(id => document.getElementById(id).value = '');
-  loadQuestions();
+  try {
+    const res = await fetch(`/api/questions/${catId}`, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({question: q, correct, options})
+    });
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    ['questionInput','correctInput','opt1','opt2','opt3'].forEach(id => document.getElementById(id).value = '');
+    loadQuestions();
+  } catch (error) {
+    console.error('Error adding question:', error);
+    alert('Failed to add question. Please try again.');
+  }
 }
 
 async function deleteQuestion(catId, qId) {
-  await fetch(`/api/questions/${catId}?id=${qId}`, {method: 'DELETE'});
-  loadQuestions();
+  try {
+    const res = await fetch(`/api/questions/${catId}?id=${qId}`, {method: 'DELETE'});
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    loadQuestions();
+  } catch (error) {
+    console.error('Error deleting question:', error);
+    alert('Failed to delete question. Please try again.');
+  }
 }
 
 function showStage(stageId) {
@@ -74,11 +115,25 @@ function showStage(stageId) {
 
 async function startQuiz() {
   currentCategory = document.getElementById('userCategory').value;
-  const res = await fetch(`/api/questions/${currentCategory}`);
-  questions = await res.json();
-  index = 0;
-  score = 0;
-  showQuestion();
+  if (!currentCategory) {
+    return alert('Please select a category first');
+  }
+  try {
+    const res = await fetch(`/api/questions/${currentCategory}`);
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    questions = await res.json();
+    if (questions.length === 0) {
+      return alert('No questions available in this category');
+    }
+    index = 0;
+    score = 0;
+    showQuestion();
+  } catch (error) {
+    console.error('Error starting quiz:', error);
+    alert('Failed to load quiz questions. Please try again.');
+  }
 }
 
 function showQuestion() {

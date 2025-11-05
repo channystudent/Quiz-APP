@@ -12,6 +12,7 @@ import sqlite3
 # Flask App Configuration
 # =====================================================
 app = Flask(__name__)
+CORS(app)
 app.secret_key = 'supersecretkey'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///quiz.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -38,34 +39,35 @@ class QuizResult(db.Model):
     answers = db.Column(db.Text)  # Store JSON string of answers
 
 
+class Category(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), unique=True, nullable=False)
+    questions = db.relationship('Question', backref='category', lazy=True)
+
+
+class Question(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    question = db.Column(db.String(255), nullable=False)
+    options = db.Column(db.String(500), nullable=False)  # comma-separated
+    correct = db.Column(db.String(255), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
+
+
 # =====================================================
 # Initialize Database Tables
 # =====================================================
 
 def init_db():
-    conn = sqlite3.connect('quiz.db')
+    """Initialize admin table using raw SQLite (not using SQLAlchemy)"""
+    conn = sqlite3.connect('instance/quiz.db')
     cursor = conn.cursor()
 
-    # Admin table
+    # Admin table (separate from SQLAlchemy models)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS admin (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE NOT NULL,
             password TEXT NOT NULL
-        )
-    ''')
-
-    # Questions table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS questions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            category TEXT NOT NULL,
-            question TEXT NOT NULL,
-            option1 TEXT,
-            option2 TEXT,
-            option3 TEXT,
-            option4 TEXT,
-            answer TEXT
         )
     ''')
 
@@ -90,7 +92,7 @@ def admin_login():
         username = request.form['username']
         password = request.form['password']
 
-        conn = sqlite3.connect('quiz.db')
+        conn = sqlite3.connect('instance/quiz.db')
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM admin WHERE username=? AND password=?", (username, password))
         admin = cursor.fetchone()
@@ -110,7 +112,7 @@ def admin_dashboard():
     if 'admin' not in session:
         return redirect(url_for('admin_login'))
 
-    conn = sqlite3.connect('quiz.db')
+    conn = sqlite3.connect('instance/quiz.db')
     cursor = conn.cursor()
 
     # Create new question
@@ -141,7 +143,7 @@ def delete_question(id):
     if 'admin' not in session:
         return redirect(url_for('admin_login'))
 
-    conn = sqlite3.connect('quiz.db')
+    conn = sqlite3.connect('instance/quiz.db')
     cursor = conn.cursor()
     cursor.execute("DELETE FROM questions WHERE id=?", (id,))
     conn.commit()
@@ -306,11 +308,6 @@ def export_data(format):
 
 
 
-# =====================================================
-# Run App
-# =====================================================
-if __name__ == '__main__':
-    app.run(debug=True)
 
 
 
@@ -361,38 +358,7 @@ if __name__ == '__main__':
 
 
 
-
-
-
-# from flask import Flask, render_template, request, jsonify
-# from flask_sqlalchemy import SQLAlchemy
-# from flask_cors import CORS
-
-app = Flask(__name__)
-CORS(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///quiz.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-db = SQLAlchemy(app)
-
-# ========== DATABASE MODELS ==========
-class Category(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), unique=True, nullable=False)
-    questions = db.relationship('Question', backref='category', lazy=True)
-
-class Question(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    question = db.Column(db.String(255), nullable=False)
-    options = db.Column(db.String(500), nullable=False)  # comma-separated
-    correct = db.Column(db.String(255), nullable=False)
-    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
-
-# ========== ROUTES ==========
-@app.route('/')
-def home():
-    return render_template('index.html')
-
+# ========== API ROUTES ==========
 @app.route('/api/categories', methods=['GET', 'POST'])
 def categories():
     if request.method == 'POST':
@@ -444,5 +410,5 @@ def questions(cat_id):
 
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()
+        db.create_all()  # Create all database tables
     app.run(debug=True)
